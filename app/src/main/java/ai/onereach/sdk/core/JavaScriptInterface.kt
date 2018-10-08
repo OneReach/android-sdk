@@ -1,11 +1,15 @@
 package ai.onereach.sdk.core
 
+import ai.onereach.sdk.MainActivity
+import ai.onereach.sdk.widget.OneReachWebView
+import android.content.Intent
+import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 
-class JavaScriptInterface(val webView: WebView) {
+class JavaScriptInterface(val webView: OneReachWebView) {
 
+    val TAG = "JavaScriptInterface"
     val INTERFACE_NAME = "js_interface"
 
     /**
@@ -16,17 +20,21 @@ class JavaScriptInterface(val webView: WebView) {
      * Calls from the JS code for the specific eventName.
      */
     @JavascriptInterface
-    private fun callEvent(eventName: String, params: Map<String, Any>?) {
-        Log.d("JavaScriptInterface", "callEvent: eventName = $eventName ; params = $params")
+    fun callEvent(eventName: String, params: Map<String, Any>?) {
+        Log.d(TAG, "callEvent: eventName = $eventName ; params = $params")
+        webView.onEventReceived(eventName, params)
+
         // the received events should be
         // broadcasted locally via LocalBroadcastManager
-
+        sendBroadcastMessage(eventName, params)
 
     }
 
-    @JavascriptInterface
-    fun callEvent(eventName: String) {
-        Log.d("JavaScriptInterface", "callEvent: eventName = $eventName")
+    fun sendBroadcastMessage(eventName: String, params: Map<String, Any>?) {
+        Intent().also { intent ->
+            intent.setAction(MainActivity.brAction)
+            LocalBroadcastManager.getInstance(webView.context).sendBroadcast(intent)
+        }
     }
 
     /**
@@ -34,9 +42,10 @@ class JavaScriptInterface(val webView: WebView) {
      * Calls to JS code for the specific eventName.
      */
     fun pushEvent(eventName: String, params: Map<String, Any>?) {
-        Log.d("JavaScriptInterface", "pushEvent: eventName = $eventName ; params = $params")
+        Log.d(TAG, "pushEvent: eventName = $eventName ; params = $params")
 
-        val script = "javascript: $eventName(\"${params!!["message"]}\")"
+        val script = "javascript: $eventName(\"${params!!["color"]}\")"
+        Log.d(TAG, "pushEvent script: $script")
         webView.evaluateJavascript(script, null)
     }
 }

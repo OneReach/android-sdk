@@ -1,55 +1,70 @@
 package ai.onereach.sdk
 
-import ai.onereach.sdk.core.JavaScriptInterface
-import android.content.pm.ApplicationInfo
+import ai.onereach.sdk.core.EventHandler
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.util.Log
+import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    val BASE_URL = "file:///android_asset/webview.html"
-    lateinit var jsInterface: JavaScriptInterface
+    companion object {
+        const val BASE_URL = "file:///android_asset/webview.html"
+        const val brAction = "js_event_broadcast"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        jsInterface = JavaScriptInterface(webView)
 
-        initWebView();
+        initWebView()
 
-        btnSendToWeb.setOnClickListener {
-            jsInterface.pushEvent("updateFromAndroid", mapOf("message" to "${editToWeb.text}"))
+        btnRegister.setOnClickListener {
+            webView.registerHandler("showToast", object : EventHandler() {
+                override fun onHandleEvent(params: Map<String, Any>?) {
+                    Toast.makeText(this@MainActivity, "Empty string", LENGTH_LONG)?.show()
+                }
+            })
         }
-    }
-
-    private fun injectJavaScriptFunction() {
-        webView.loadUrl("javascript: " +
-                "window.androidObj.textToAndroid = function(message) { " +
-                jsInterface.INTERFACE_NAME + ".callEvent(message) }")
+        btnUnregister.setOnClickListener {
+            webView.unregisterHandler("myTestHandler")
+        }
+        btnSendToWeb.setOnClickListener {
+            val rnd = Random()
+            val color = Color.rgb(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
+            val hexColor = String.format("#%06X", 0xFFFFFF and color)
+            webView.send("changeColorFromAndroid", mapOf("color" to hexColor))
+        }
     }
 
     private fun initWebView() {
-        if (0 != (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)) {
-            WebView.setWebContentsDebuggingEnabled(true)
-        }
-
-        webView.settings.javaScriptEnabled = true
-        webView.addJavascriptInterface(jsInterface, jsInterface.INTERFACE_NAME)
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView, url: String) {
-                if (url == BASE_URL) {
-                    injectJavaScriptFunction()
-                }
-            }
-        }
-        webView.loadUrl(BASE_URL)
+        webView.loadUrl(Companion.BASE_URL)
     }
 
-    override fun onDestroy() {
-        webView.removeJavascriptInterface(jsInterface.INTERFACE_NAME)
-        super.onDestroy()
+    override fun onStart() {
+        super.onStart()
+        LocalBroadcastManager.getInstance(this).registerReceiver(br, filter)
     }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(br)
+    }
+
+    val br: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("BroadcastReceiver", "onReceive")
+        }
+
+    }
+    val filter = IntentFilter(brAction)
 }
