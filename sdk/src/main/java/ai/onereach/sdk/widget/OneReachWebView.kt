@@ -6,7 +6,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 
 class OneReachWebView : WebView {
 
@@ -49,6 +51,14 @@ class OneReachWebView : WebView {
         settings.setAppCacheEnabled(true)
 
         addJavascriptInterface(jsInterface, jsInterface.INTERFACE_NAME)
+
+        webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                view?.loadUrl(request?.url.toString())
+
+                return true
+            }
+        }
     }
 
     override fun onDetachedFromWindow() {
