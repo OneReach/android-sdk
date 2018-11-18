@@ -1,6 +1,5 @@
 package ai.onereach.sdk.core
 
-import ai.onereach.sdk.MainActivity
 import ai.onereach.sdk.widget.OneReachWebView
 import android.content.Intent
 import android.support.v4.content.LocalBroadcastManager
@@ -32,7 +31,8 @@ class JavaScriptInterface(val webView: OneReachWebView) {
 
     fun sendBroadcastMessage(eventName: String, params: Map<String, Any>?) {
         Intent().also { intent ->
-            intent.setAction(MainActivity.brAction)
+            //TODO: set correct action for local broadcast
+            //intent.setAction(MainActivity.brAction)
             LocalBroadcastManager.getInstance(webView.context).sendBroadcast(intent)
         }
     }

@@ -1,4 +1,4 @@
-package ai.onereach.sdk
+package ai.onereach.sdk.app
 
 import ai.onereach.sdk.core.EventHandler
 import android.content.BroadcastReceiver
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initWebView() {
-        webView.loadUrl(Companion.BASE_URL)
+        webView.loadUrl(BASE_URL)
     }
 
     override fun onStart() {

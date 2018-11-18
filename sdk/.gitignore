@@ -1,0 +1,55 @@
+*.iml
+.gradle
+/local.properties
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+/.idea/
+*.tap
+*.jks
+
+# Built application files
+*.apk
+*.ap_
+
+# Files for the Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+
+# Gradle files
+.gradle/
+build/
+/*/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+dpdkeystore.properties
+
+# Log Files
+*.log
+
+#Linux directory files
+.directory
+
+# Custom Files
+#Word temp files
+.~*
+
+#AndroidStudio codestyle
+!.idea/codeStyleSettings.xml
+
+
+# Android Studio
+*.iml
+.idea
+build/
+.navigation
+captures/
+output.json
