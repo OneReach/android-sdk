@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        text-align:center;
+      }
+    
+     li {
+        padding-top: 30px;
+        font-size: 50pt;
+     }
+    </style>
+    
+    <!--    Every webpage that whant to interact with OneReach native SDK-->
+    <!--    should use special js API provided by OneReach-->
+    <script src="onereachSDK.js"></script>
+    
+    
+    <script type="text/javascript">
+
+        registerEventHandler('handlePushToken', function(parameters){
+            alert('Your device push token is ' + parameters['token']);
+        });
+                             
+        registerEventHandler('handleDeviceInfo', function(parameters){
+            alert('Your platform is ' + parameters['platform']);
+        });
+
+    </script>
+    
+  </head>
+  <body>
+      
+      <li><a href="javascript:sendEvent('getPushToken')">Get Push Token</a></li>
+      <li><a href="javascript:sendEvent('getDeviceInfo')">Get Platform</a></li>
+    
+  </body>
+</html>

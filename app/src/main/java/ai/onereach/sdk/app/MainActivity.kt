@@ -5,20 +5,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
-import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        const val BASE_URL = "file:///android_asset/webview.html"
+        const val BASE_URL = "file:///android_asset/TestPushAndPlatformAPI.html"
         const val brAction = "js_event_broadcast"
     }
 
@@ -29,20 +25,26 @@ class MainActivity : AppCompatActivity() {
         initWebView()
 
         btnRegister.setOnClickListener {
-            webView.registerHandler("showToast", object : EventHandler() {
-                override fun onHandleEvent(params: Map<String, Any>?) {
-                    Toast.makeText(this@MainActivity, "Empty string", LENGTH_LONG)?.show()
-                }
-            })
+            webView.apply {
+                registerHandler("getPushToken", object : EventHandler() {
+                    override fun onHandleEvent(params: Map<String, Any>?) {
+                        webView.send("handlePushToken", mapOf("token" to "Test SDK Push Token"))
+                    }
+
+                })
+                registerHandler("getDeviceInfo", object : EventHandler() {
+                    override fun onHandleEvent(params: Map<String, Any>?) {
+                        webView.send("handleDeviceInfo", mapOf("platform" to "Android"))
+                    }
+
+                })
+            }
         }
         btnUnregister.setOnClickListener {
-            webView.unregisterHandler("myTestHandler")
-        }
-        btnSendToWeb.setOnClickListener {
-            val rnd = Random()
-            val color = Color.rgb(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
-            val hexColor = String.format("#%06X", 0xFFFFFF and color)
-            webView.send("changeColorFromAndroid", mapOf("color" to hexColor))
+            webView.apply {
+                unregisterHandler("getPushToken")
+                unregisterHandler("getDeviceInfo")
+            }
         }
     }
 

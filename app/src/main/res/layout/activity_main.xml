@@ -10,12 +10,12 @@
         android:id="@+id/webView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.5" />
+        android:layout_weight="0.25" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.5"
+        android:layout_weight="0.75"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -26,14 +26,6 @@
             android:text="Android View"
             android:textSize="24sp"
             android:textStyle="bold" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnSendToWeb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="Change Web Color"
-            android:paddingBottom="8dp"
-            android:textSize="20sp" />
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -2,14 +2,17 @@ package ai.onereach.sdk.core
 
 import ai.onereach.sdk.widget.OneReachWebView
 import android.content.Intent
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.util.Log
 import android.webkit.JavascriptInterface
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types.newParameterizedType
+
 
 class JavaScriptInterface(val webView: OneReachWebView) {
 
     val TAG = "JavaScriptInterface"
-    val INTERFACE_NAME = "js_interface"
+    val INTERFACE_NAME = "AndroidOneReachInterface"
 
     /**
      * All of the communication should be handled by a single receiver function.
@@ -19,13 +22,16 @@ class JavaScriptInterface(val webView: OneReachWebView) {
      * Calls from the JS code for the specific eventName.
      */
     @JavascriptInterface
-    fun callEvent(eventName: String, params: Map<String, Any>?) {
+    fun callEvent(eventName: String, paramsJson: String?) {
+        Log.d(TAG, "callEvent: eventName = $eventName ; paramsJson = $paramsJson")
+
+        val params = jsonParamsToMap(paramsJson)
         Log.d(TAG, "callEvent: eventName = $eventName ; params = $params")
+
         webView.onEventReceived(eventName, params)
 
-        // the received events should be
-        // broadcasted locally via LocalBroadcastManager
-        sendBroadcastMessage(eventName, params)
+        // The received events should be broadcast locally via LocalBroadcastManager
+        // sendBroadcastMessage(eventName, params)
 
     }
 
@@ -44,8 +50,61 @@ class JavaScriptInterface(val webView: OneReachWebView) {
     fun pushEvent(eventName: String, params: Map<String, Any>?) {
         Log.d(TAG, "pushEvent: eventName = $eventName ; params = $params")
 
-        val script = "javascript: $eventName(\"${params!!["color"]}\")"
+        val jsonParams = mapParamsToJson(params)
+        val script = "javascript: handleEvent('$eventName', $jsonParams)"
+
         Log.d(TAG, "pushEvent script: $script")
-        webView.evaluateJavascript(script, null)
+
+        // WebView method may called on thread 'JavaBridge', all methods must be called on the same thread.
+        webView.post { webView.evaluateJavascript(script, null) }
+    }
+
+    /**
+     * JavascriptInterface works only with primitive types and Strings,
+     * so 'params' should be returned as JSON string and will be converted to Map on Android side.
+     *
+     * Convert JSON params string to Map
+     */
+    fun jsonParamsToMap(paramsJson: String?): Map<String, Any>? {
+        return paramsJson?.let { json ->
+            val type = newParameterizedType(
+                Map::class.java,
+                String::class.java,
+                Any::class.java
+            )
+            val moshi = Moshi.Builder().build()
+            val adapter = moshi.adapter<Map<String, Any>>(type)
+            return try {
+                adapter.fromJson(json)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+    /**
+     * JavascriptInterface works only with primitive types and Strings,
+     * so Map of 'params' should be passed as JSON string to script
+     * and will be converted to JSON string on Android side before.
+     *
+     * Convert Map params to JSON string
+     */
+    fun mapParamsToJson(params: Map<String, Any>?): String? {
+        return params?.let { paramsMap ->
+            val type = newParameterizedType(
+                Map::class.java,
+                String::class.java,
+                Any::class.java
+            )
+            val moshi = Moshi.Builder().build()
+            val adapter = moshi.adapter<Map<String, Any>>(type)
+            return try {
+                adapter.toJson(paramsMap)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
     }
 }

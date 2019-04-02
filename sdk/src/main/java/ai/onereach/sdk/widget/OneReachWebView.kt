@@ -5,10 +5,7 @@ import ai.onereach.sdk.core.JavaScriptInterface
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.webkit.CookieManager
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 
 class OneReachWebView : WebView {
 
@@ -24,7 +21,11 @@ class OneReachWebView : WebView {
         init()
     }
 
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         init()
     }
 
@@ -53,12 +54,18 @@ class OneReachWebView : WebView {
         addJavascriptInterface(jsInterface, jsInterface.INTERFACE_NAME)
 
         webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
                 view?.loadUrl(request?.url.toString())
 
                 return true
             }
         }
+
+        // set WebChromeClient for show alerts and other js features
+        webChromeClient = object : WebChromeClient() {}
     }
 
     override fun onDetachedFromWindow() {
