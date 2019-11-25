@@ -1,7 +1,6 @@
 package ai.onereach.sdk.persistent
 
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cookie
 import okhttp3.CookieJar
@@ -33,14 +32,12 @@ class WebkitCookieManagerProxy(private val persistentRepository: PersistentRepos
         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
         java.net.CookieHandler.setDefault(this)
 
-        runBlocking(Dispatchers.Main) {
-            webkitCookieManager.removeAllCookies {
-                webkitCookieManager.flush()
+        webkitCookieManager.removeAllCookies {
+            webkitCookieManager.flush()
 
-                lock.withLock {
-                    removeAllCookiesDone = true
-                    condition.signalAll()
-                }
+            lock.withLock {
+                removeAllCookiesDone = true
+                condition.signalAll()
             }
         }
     }
@@ -141,7 +138,7 @@ class WebkitCookieManagerProxy(private val persistentRepository: PersistentRepos
             ?.let { newCookies ->
                 mutableSetOf<String>()
                     .apply {
-                        persistentRepository.removeExpiredCookiesForBot()
+                        removeExpiredCookies()
                         persistentRepository.getCookies()
                             ?.let { storedCookies ->
                                 addAll(storedCookies)
@@ -154,6 +151,22 @@ class WebkitCookieManagerProxy(private val persistentRepository: PersistentRepos
 
     private fun restoreWebCookies(): Set<String>? = runBlocking {
         persistentRepository.getCookies()
+    }
+
+    private suspend fun removeExpiredCookies() {
+        val currentTime = System.currentTimeMillis()
+        //HttpUrl.parse(session.botUrl)
+
+        // For parsing Cookie need to create valid HttpUrl
+        HttpUrl.parse("http://www.google.com")
+            ?.let { httpUrl ->
+                persistentRepository.getCookies()
+                    ?.mapNotNull { Cookie.parse(httpUrl, it) }
+                    ?.filter { !it.persistent() || (it.expiresAt() > currentTime) }
+                    ?.map { it.toString() }
+                    ?.toSet()
+                    ?.run { persistentRepository.saveCookies(this) }
+            }
     }
 
     companion object {

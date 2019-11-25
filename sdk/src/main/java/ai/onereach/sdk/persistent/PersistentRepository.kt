@@ -7,7 +7,6 @@ interface PersistentRepository {
 
     suspend fun saveCookies(cookiesData: Set<String>?)
     suspend fun getCookies(): Set<String>?
-    suspend fun removeExpiredCookiesForBot()
     suspend fun saveLocalStorage(localStorageData: String?)
     suspend fun getLocalStorage(): HashMap<String, String>?
 

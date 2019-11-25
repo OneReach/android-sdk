@@ -20,7 +20,8 @@ class OneReachWebView : WebView {
 
     private var webViewOkHttpClient: OkHttpClient? = null
     private var localStorageManager: WebkitLocalStorageManager? = null
-    private var persistentRepository: PersistentRepository? = null
+
+    var persistentRepository: PersistentRepository? = null
         set(value) {
             field = value
             value?.apply {
@@ -72,17 +73,9 @@ class OneReachWebView : WebView {
         settings.setSupportZoom(true)
         settings.setAppCacheEnabled(true)
 
-        addJavascriptInterface(jsInterface, jsInterface.INTERFACE_NAME)
+        addJavascriptInterface(jsInterface, JavaScriptInterface.INTERFACE_NAME)
 
         webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                view?.loadUrl(request?.url.toString())
-
-                return true
-            }
 
             override fun shouldInterceptRequest(
                 view: WebView,
@@ -124,8 +117,26 @@ class OneReachWebView : WebView {
         webChromeClient = object : WebChromeClient() {}
     }
 
+    override fun loadUrl(url: String?) {
+        localStorageManager
+            ?.let { storageManager ->
+                url?.let { targetUrl ->
+                    storageManager.loadAndRestoreWebViewLocalStorage(this, targetUrl)
+                }
+            } ?: super.loadUrl(url)
+    }
+
+    override fun loadUrl(url: String?, additionalHttpHeaders: MutableMap<String, String>?) {
+        localStorageManager
+            ?.let { storageManager ->
+                url?.let { targetUrl ->
+                    storageManager.loadAndRestoreWebViewLocalStorage(this, targetUrl)
+                }
+            } ?: super.loadUrl(url, additionalHttpHeaders)
+    }
+
     override fun onDetachedFromWindow() {
-        removeJavascriptInterface(jsInterface.INTERFACE_NAME)
+        removeJavascriptInterface(JavaScriptInterface.INTERFACE_NAME)
         localStorageManager?.jsSaveWebViewLocalStorage(this)
         super.onDetachedFromWindow()
     }

@@ -1,18 +1,13 @@
 package ai.onereach.sdk.core
 
 import ai.onereach.sdk.widget.OneReachWebView
-import android.content.Intent
 import android.util.Log
 import android.webkit.JavascriptInterface
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types.newParameterizedType
 
 
-class JavaScriptInterface(val webView: OneReachWebView) {
-
-    val TAG = "JavaScriptInterface"
-    val INTERFACE_NAME = "AndroidOneReachInterface"
+class JavaScriptInterface(private val webView: OneReachWebView) {
 
     /**
      * All of the communication should be handled by a single receiver function.
@@ -36,11 +31,7 @@ class JavaScriptInterface(val webView: OneReachWebView) {
     }
 
     fun sendBroadcastMessage(eventName: String, params: Map<String, Any>?) {
-        Intent().also { intent ->
-            //TODO: set correct action for local broadcast
-            //intent.setAction(MainActivity.brAction)
-            LocalBroadcastManager.getInstance(webView.context).sendBroadcast(intent)
-        }
+        //TODO: create and set value to LiveData for external subscribe to events
     }
 
     /**
@@ -106,5 +97,10 @@ class JavaScriptInterface(val webView: OneReachWebView) {
                 null
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "JavaScriptInterface"
+        const val INTERFACE_NAME = "AndroidOneReachInterface"
     }
 }
