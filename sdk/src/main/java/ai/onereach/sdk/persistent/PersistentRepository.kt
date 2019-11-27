@@ -3,7 +3,7 @@ package ai.onereach.sdk.persistent
 /**
  * Created by vostopolets on 2019-10-07.
  */
-interface PersistentRepository {
+public interface PersistentRepository {
 
     suspend fun saveCookies(cookiesData: Set<String>?)
     suspend fun getCookies(): Set<String>?
