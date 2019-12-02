@@ -1,2 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ai.onereach.sdk" />
+<manifest package="ai.onereach.sdk" />

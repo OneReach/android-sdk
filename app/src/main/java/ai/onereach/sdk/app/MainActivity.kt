@@ -1,21 +1,18 @@
 package ai.onereach.sdk.app
 
 import ai.onereach.sdk.core.EventHandler
-import android.content.BroadcastReceiver
-import android.content.Context
+import ai.onereach.sdk.persistent.PersistentRepository
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        const val BASE_URL = "file:///android_asset/TestPushAndPlatformAPI.html"
-        const val brAction = "js_event_broadcast"
+        //const val BASE_URL = "file:///android_asset/TestPushAndPlatformAPI.html"
+        const val BASE_URL =
+            "https://sdkapi-staging.onereach.ai/http/b3166140-3e91-46c6-b496-af0f507e7172/mobile/sandboxing"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,24 +46,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initWebView() {
+        webView.persistentRepository = object : PersistentRepository {
+            override suspend fun saveCookies(cookiesData: Set<String>?) {
+                // implement saving of Cookies to the app storage
+            }
+
+            override suspend fun getCookies(): Set<String>? {
+                // fetch stored Cookies from the app storage
+                return null
+            }
+
+            override suspend fun saveLocalStorage(localStorageData: String?) {
+                // implement saving of LocalStorage to the app storage
+            }
+
+            override suspend fun getLocalStorage(): HashMap<String, String>? {
+                // fetch stored LocalStorage data from the app storage
+                return null
+            }
+        }
         webView.loadUrl(BASE_URL)
     }
 
-    override fun onStart() {
-        super.onStart()
-        LocalBroadcastManager.getInstance(this).registerReceiver(br, filter)
+    override fun onBackPressed() {
+        minimizeApp()
     }
 
-    override fun onStop() {
-        super.onStop()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(br)
+    private fun minimizeApp() {
+        startActivity(Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        })
     }
-
-    val br: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d("BroadcastReceiver", "onReceive")
-        }
-
-    }
-    val filter = IntentFilter(brAction)
 }

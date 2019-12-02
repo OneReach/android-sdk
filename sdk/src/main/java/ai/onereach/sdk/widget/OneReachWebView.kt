@@ -8,7 +8,12 @@ import ai.onereach.sdk.persistent.WebkitLocalStorageManager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.webkit.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.OnLifecycleEvent
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
@@ -35,6 +40,17 @@ class OneReachWebView : WebView {
 
         }
 
+    private val activityLifecycle: LifecycleObserver by lazy {
+        object : LifecycleObserver {
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+            fun onStopActivity() {
+                Log.d("TAG_CHECK_PERS", "Lifecycle.Event.ON_STOP")
+                localStorageManager?.jsSaveWebViewLocalStorage(this@OneReachWebView)
+            }
+        }
+    }
+
     constructor(context: Context?) : super(context) {
         init()
     }
@@ -53,6 +69,8 @@ class OneReachWebView : WebView {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun init() {
+        bindParentLifecycle()
+
         val cookieManager = CookieManager.getInstance()
         CookieManager.setAcceptFileSchemeCookies(true)
         cookieManager.setAcceptCookie(true)
@@ -137,8 +155,14 @@ class OneReachWebView : WebView {
 
     override fun onDetachedFromWindow() {
         removeJavascriptInterface(JavaScriptInterface.INTERFACE_NAME)
-        localStorageManager?.jsSaveWebViewLocalStorage(this)
         super.onDetachedFromWindow()
+    }
+
+    /**
+     * Bind Activity Lifecycle for handle onStop() of Activity
+     */
+    private fun bindParentLifecycle() {
+        (context as? LifecycleOwner)?.run { lifecycle.addObserver(activityLifecycle) }
     }
 
     /**
