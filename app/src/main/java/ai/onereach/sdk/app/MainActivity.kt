@@ -56,11 +56,11 @@ class MainActivity : AppCompatActivity() {
                 return null
             }
 
-            override suspend fun saveLocalStorage(localStorageData: String?) {
+            override suspend fun saveLocalStorage(localStorageData: Map<String, String>?) {
                 // implement saving of LocalStorage to the app storage
             }
 
-            override suspend fun getLocalStorage(): HashMap<String, String>? {
+            override suspend fun getLocalStorage(): Map<String, String>? {
                 // fetch stored LocalStorage data from the app storage
                 return null
             }
