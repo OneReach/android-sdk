@@ -3,8 +3,8 @@ package ai.onereach.sdk.core
 import ai.onereach.sdk.widget.OneReachWebView
 import android.util.Log
 import android.webkit.JavascriptInterface
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types.newParameterizedType
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 
 class JavaScriptInterface(private val webView: OneReachWebView) {
@@ -56,23 +56,18 @@ class JavaScriptInterface(private val webView: OneReachWebView) {
      *
      * Convert JSON params string to Map
      */
-    fun jsonParamsToMap(paramsJson: String?): Map<String, Any>? {
-        return paramsJson?.let { json ->
-            val type = newParameterizedType(
-                Map::class.java,
-                String::class.java,
-                Any::class.java
-            )
-            val moshi = Moshi.Builder().build()
-            val adapter = moshi.adapter<Map<String, Any>>(type)
-            return try {
-                adapter.fromJson(json)
+    fun jsonParamsToMap(paramsJson: String?): Map<String, Any>? =
+        paramsJson?.run {
+            try {
+                Gson().fromJson(
+                    this,
+                    object : TypeToken<Map<String, Any>>() {}.type
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
         }
-    }
 
     /**
      * JavascriptInterface works only with primitive types and Strings,
@@ -81,23 +76,18 @@ class JavaScriptInterface(private val webView: OneReachWebView) {
      *
      * Convert Map params to JSON string
      */
-    fun mapParamsToJson(params: Map<String, Any>?): String? {
-        return params?.let { paramsMap ->
-            val type = newParameterizedType(
-                Map::class.java,
-                String::class.java,
-                Any::class.java
-            )
-            val moshi = Moshi.Builder().build()
-            val adapter = moshi.adapter<Map<String, Any>>(type)
-            return try {
-                adapter.toJson(paramsMap)
+    fun mapParamsToJson(params: Map<String, Any>?): String? =
+        params?.run {
+            try {
+                Gson().toJson(
+                    this,
+                    object : TypeToken<Map<String, Any>>() {}.type
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
         }
-    }
 
     companion object {
         private const val TAG = "JavaScriptInterface"

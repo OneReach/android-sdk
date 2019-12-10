@@ -4,6 +4,8 @@ import ai.onereach.sdk.extensions.jsInjection
 import ai.onereach.sdk.extensions.loadUrlWithJsInjection
 import android.webkit.ValueCallback
 import android.webkit.WebView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -33,8 +35,12 @@ class WebkitLocalStorageManager(private val persistentRepository: PersistentRepo
         webView
             .jsInjection(
                 "Object.entries(localStorage);",
-                ValueCallback {
-                    GlobalScope.launch { persistentRepository.saveLocalStorage(it) }
+                ValueCallback { localStorageData ->
+                    val localStorageMap: Map<String, String> = Gson().fromJson(
+                        localStorageData,
+                        object : TypeToken<Map<String, String>>() {}.type
+                    )
+                    GlobalScope.launch { persistentRepository.saveLocalStorage(localStorageMap) }
                 })
     }
 
