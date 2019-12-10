@@ -18,12 +18,13 @@ android {
 }
 
 dependencies {
-
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     // Moshi
-    implementation "com.squareup.moshi:moshi-kotlin:1.8.0"
+    implementation("com.squareup.moshi:moshi-kotlin:1.8.0") {
+        transitive = false
+    }
 
     // Okhttp3
     api 'com.squareup.okhttp3:okhttp:3.12.3'
