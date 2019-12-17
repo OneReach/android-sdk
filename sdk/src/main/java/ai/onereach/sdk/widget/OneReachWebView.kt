@@ -17,6 +17,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import java.nio.charset.Charset
 
 class OneReachWebView : WebView {
 
@@ -96,13 +97,15 @@ class OneReachWebView : WebView {
         webViewClient = object : WebViewClient() {
 
             override fun shouldInterceptRequest(
-                view: WebView,
-                url: String
+                view: WebView?,
+                request: WebResourceRequest?
             ): WebResourceResponse? =
                 webViewOkHttpClient
                     ?.let { okHttpClient ->
-                        url
-                            .takeIf { it.startsWith("http://") || it.startsWith("https://") }
+                        request
+                            ?.url
+                            ?.toString()
+                            ?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
                             ?.run {
                                 try {
                                     val okHttpRequest = Request.Builder()
@@ -112,12 +115,25 @@ class OneReachWebView : WebView {
                                         .newCall(okHttpRequest)
                                         .execute()
 
-                                    val mimeType = "text/html"
-                                    val encoding = "utf-8"
+                                    val responseBody = response.body() ?: return null
+
+                                    val mimeType =
+                                        responseBody
+                                            .contentType()
+                                            ?.run { "${type()}/${subtype()}" }
+                                            ?: "text/html"
+
+                                    val encoding =
+                                        responseBody
+                                            .contentType()
+                                            ?.charset(Charset.defaultCharset())
+                                            ?.name()
+                                            ?: "utf-8"
+
                                     return WebResourceResponse(
                                         mimeType,
                                         encoding,
-                                        response.body()?.byteStream()
+                                        responseBody.byteStream()
                                     )
                                 } catch (e: IOException) {
                                     e.printStackTrace()
